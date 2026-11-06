@@ -1,0 +1,602 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>La Aventura de las Sílabas Mágicas</title>
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- FontAwesome para iconos divertidos -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <!-- Google Fonts: Fredoka & Quicksand para lectoescritura infantil -->
+    <link href="https://fonts.googleapis.com/css2?family=Fredoka:wght@400;600;700&family=Quicksand:wght@500;700&display=swap" rel="stylesheet">
+    
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        aguda: {
+                            light: '#FEE2E2',
+                            DEFAULT: '#EF4444',
+                            dark: '#B91C1C'
+                        },
+                        grave: {
+                            light: '#DBEAFE',
+                            DEFAULT: '#3B82F6',
+                            dark: '#1D4ED8'
+                        }
+                    },
+                    fontFamily: {
+                        fredoka: ['Fredoka', 'sans-serif'],
+                        quicksand: ['Quicksand', 'sans-serif']
+                    }
+                }
+            }
+        }
+    </script>
+    <style>
+        body {
+            font-family: 'Quicksand', sans-serif;
+            background: linear-gradient(135deg, #f0f9ff 0%, #e0f2fe 100%);
+            min-height: 100vh;
+            user-select: none;
+        }
+
+        .title-font {
+            font-family: 'Fredoka', sans-serif;
+        }
+
+        .btn-syllable {
+            transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+            box-shadow: 0 6px 0 0 rgba(0,0,0,0.15);
+        }
+
+        .btn-syllable:active {
+            transform: translateY(4px);
+            box-shadow: 0 2px 0 0 rgba(0,0,0,0.15);
+        }
+
+        /* Animación de pulso para acento */
+        @keyframes pulse-strong {
+            0%, 100% { transform: scale(1); }
+            50% { transform: scale(1.1); }
+        }
+        .voice-accent {
+            animation: pulse-strong 0.8s infinite;
+        }
+
+        /* Efecto de tarjetas */
+        .card-game {
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(10px);
+            box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
+        }
+
+        .aguda-glow {
+            box-shadow: 0 0 25px rgba(239, 68, 68, 0.4);
+            border: 4px solid #EF4444;
+        }
+
+        .grave-glow {
+            box-shadow: 0 0 25px rgba(59, 130, 246, 0.4);
+            border: 4px solid #3B82F6;
+        }
+
+        /* Animación de palmadas */
+        @keyframes clap {
+            0% { transform: rotate(0deg) scale(1); }
+            50% { transform: rotate(-15deg) scale(1.2); }
+            100% { transform: rotate(0deg) scale(1); }
+        }
+        .animate-clap {
+            animation: clap 0.4s ease-in-out;
+        }
+    </style>
+</head>
+<body class="flex flex-col min-h-screen text-slate-800 pb-8">
+
+    <!-- Encabezado / Navigation Bar -->
+    <header class="bg-white/80 backdrop-blur-md border-b border-sky-100 sticky top-0 z-50">
+        <div class="max-w-5xl mx-auto px-4 py-3 flex justify-between items-center">
+            <div class="flex items-center space-x-3">
+                <div class="bg-amber-400 p-2.5 rounded-2xl text-white shadow-md">
+                    <i class="fa-solid fa-owl fa-2x"></i>
+                </div>
+                <div>
+                    <h1 class="title-font text-2xl font-bold bg-gradient-to-r from-sky-600 to-indigo-600 bg-clip-text text-transparent">
+                        Sílabas Mágicas
+                    </h1>
+                    <p class="text-xs text-slate-500 font-semibold">Aprende Agudas (Rojas) y Graves (Azules)</p>
+                </div>
+            </div>
+
+            <!-- Puntuación y Progreso -->
+            <div class="flex items-center gap-4">
+                <div class="bg-amber-50 border border-amber-200 px-4 py-1.5 rounded-full flex items-center gap-2">
+                    <i class="fa-solid fa-star text-amber-500 text-xl"></i>
+                    <span id="score-display" class="title-font text-xl font-bold text-amber-700">0</span>
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <!-- Leyenda de Aprendizaje Permanente -->
+    <div class="max-w-4xl mx-auto w-full px-4 mt-4">
+        <div class="grid grid-cols-2 gap-3 text-center title-font">
+            <div class="bg-red-500/10 border-2 border-red-400 text-red-700 rounded-2xl p-2 flex items-center justify-center gap-2">
+                <span class="w-4 h-4 rounded-full bg-red-500 inline-block animate-pulse"></span>
+                <span class="font-bold text-sm md:text-base">AGUDAS = Tónica al Final (Última)</span>
+            </div>
+            <div class="bg-blue-500/10 border-2 border-blue-400 text-blue-700 rounded-2xl p-2 flex items-center justify-center gap-2">
+                <span class="w-4 h-4 rounded-full bg-blue-500 inline-block animate-pulse"></span>
+                <span class="font-bold text-sm md:text-base">GRAVES = Tónica en Penúltima</span>
+            </div>
+        </div>
+    </div>
+
+    <!-- Menú de Selección de Modos de Juego -->
+    <main class="max-w-4xl mx-auto w-full px-4 mt-6 flex-grow flex flex-col justify-center">
+        
+        <!-- Tabs de Selección de Actividad -->
+        <div class="flex justify-center gap-2 mb-6 overflow-x-auto p-1 bg-white/60 rounded-2xl border border-sky-100">
+            <button onclick="switchMode('detect')" id="tab-detect" class="flex-1 min-w-[120px] py-3 px-4 rounded-xl font-bold title-font text-sm md:text-base transition-all bg-sky-600 text-white shadow-md">
+                <i class="fa-solid fa-magnifying-glass mr-2"></i>1. Encontrar Sílaba
+            </button>
+            <button onclick="switchMode('accent')" id="tab-accent" class="flex-1 min-w-[120px] py-3 px-4 rounded-xl font-bold title-font text-sm md:text-base transition-all text-slate-600 hover:bg-white/80">
+                <i class="fa-solid fa-pen-nib mr-2"></i>2. Taller de Tildes
+            </button>
+            <button onclick="switchMode('sentence')" id="tab-sentence" class="flex-1 min-w-[120px] py-3 px-4 rounded-xl font-bold title-font text-sm md:text-base transition-all text-slate-600 hover:bg-white/80">
+                <i class="fa-solid fa-align-left mr-2"></i>3. Oraciones
+            </button>
+        </div>
+
+        <!-- AREA DE JUEGO PRINCIPAL -->
+        <div class="card-game rounded-3xl p-6 md:p-8 relative min-h-[420px] flex flex-col justify-between border border-white">
+            
+            <!-- Personaje Tutor (Búho Bubu) con mensajes pedagógicos -->
+            <div class="flex items-start gap-4 bg-sky-50/80 p-4 rounded-2xl border border-sky-100 mb-6">
+                <div class="bg-white p-2 rounded-full shadow-sm text-sky-600 flex-shrink-0">
+                    <i class="fa-solid fa-graduation-cap text-2xl"></i>
+                </div>
+                <div class="flex-grow">
+                    <h3 class="font-bold text-sky-900 text-sm">Búho Bubu te enseña:</h3>
+                    <p id="tutor-feedback" class="text-sm md:text-base text-sky-800 leading-snug">
+                        ¡Hola amiguitos! Vamos a dar palmadas para escuchar dónde suena más fuerte la voz. ¡Toca la sílaba tónica!
+                    </p>
+                </div>
+            </div>
+
+            <!-- MODULO 1: IDENTIFICAR SÍLABA TÓNICA -->
+            <div id="mode-detect" class="flex-grow flex flex-col justify-center items-center">
+                <!-- Imagen o icono representativo de la palabra -->
+                <div class="mb-4 text-center">
+                    <span id="word-icon" class="text-6xl md:text-7xl block mb-2 filter drop-shadow">🎈</span>
+                    <p class="text-xs font-bold text-slate-400 uppercase tracking-widest">Escucha y Selecciona</p>
+                </div>
+
+                <!-- Botón para escuchar ritmo vocal -->
+                <button onclick="playClapSound()" class="mb-6 bg-amber-100 hover:bg-amber-200 text-amber-800 font-bold px-4 py-2 rounded-full text-sm flex items-center gap-2 transition-all border border-amber-300">
+                    <i id="clap-icon" class="fa-solid fa-hands-clapping text-amber-600 text-lg"></i>
+                    <span>¡Dar golpes de voz (Palmadas)!</span>
+                </button>
+
+                <!-- Sílabas Desglosadas -->
+                <div id="syllables-container" class="flex flex-wrap justify-center gap-3 md:gap-4 my-4">
+                    <!-- Ejemplo generado dinámicamente: [Glo] [bo] -->
+                </div>
+
+                <!-- Distintivo de Clasificación Aguda/Grave (Oculto al inicio, revelado tras acertar) -->
+                <div id="classification-badge" class="mt-6 opacity-0 transition-all transform scale-95 flex items-center justify-center gap-2 px-6 py-2.5 rounded-full font-bold title-font text-lg text-white">
+                    <!-- Se llena en JS -->
+                </div>
+            </div>
+
+            <!-- MODULO 2: TALLER DE TILDES (Agudas N, S o Vocal) -->
+            <div id="mode-accent" class="hidden flex-grow flex flex-col justify-center items-center">
+                <div class="text-center max-w-md mx-auto mb-6">
+                    <span class="inline-block bg-red-100 text-red-600 text-xs font-bold px-3 py-1 rounded-full mb-2">REGLA DE AGUDAS</span>
+                    <h3 class="title-font text-xl md:text-2xl font-bold text-slate-700">¿Esta palabra lleva tilde gráfica (´)?</h3>
+                    <p class="text-xs text-slate-500 mt-1">Recuerda: Las palabras **agudas** llevan tilde si terminan en **N, S o Vocal**.</p>
+                </div>
+
+                <div class="bg-slate-50 p-6 rounded-2xl border border-slate-200 text-center w-full max-w-md mb-6">
+                    <div id="accent-word-display" class="title-font text-4xl font-bold text-slate-800 mb-2 tracking-wide">
+                        <!-- Ejemplo: Ca-fe -->
+                    </div>
+                    <p id="accent-word-hint" class="text-xs text-slate-500 italic">"Bebida caliente de color oscuro"</p>
+                </div>
+
+                <!-- Opciones: Poner Tilde o Dejar Sin Tilde -->
+                <div class="flex gap-4 w-full max-w-md">
+                    <button onclick="checkAccentDecision(true)" class="flex-1 bg-red-500 hover:bg-red-600 text-white font-bold py-3 px-4 rounded-xl title-font shadow-lg transition-all flex flex-col items-center">
+                        <span class="text-xl">¡Sí lleva tilde!</span>
+                        <span class="text-xs text-red-100 font-normal">Termina en N, S o Vocal</span>
+                    </button>
+                    <button onclick="checkAccentDecision(false)" class="flex-1 bg-slate-600 hover:bg-slate-700 text-white font-bold py-3 px-4 rounded-xl title-font shadow-lg transition-all flex flex-col items-center">
+                        <span class="text-xl">No lleva tilde</span>
+                        <span class="text-xs text-slate-200 font-normal">No cumple la regla</span>
+                    </button>
+                </div>
+            </div>
+
+            <!-- MODULO 3: REDACCIÓN DE ORACIONES CORTAS -->
+            <div id="mode-sentence" class="hidden flex-grow flex flex-col justify-center items-center">
+                <div class="text-center max-w-md mx-auto mb-4">
+                    <h3 class="title-font text-xl font-bold text-slate-700">Completa la oración correctamente</h3>
+                    <p class="text-xs text-slate-500">Selecciona la palabra agud/grave escrita correctamente con o sin tilde.</p>
+                </div>
+
+                <div class="bg-white p-6 rounded-2xl border-2 border-indigo-100 shadow-sm w-full max-w-lg mb-6">
+                    <p id="sentence-display" class="title-font text-lg md:text-xl text-slate-800 text-center leading-relaxed">
+                        El <span class="inline-block border-b-4 border-indigo-500 text-indigo-600 px-3 py-1 font-bold">_____</span> es muy juguetón.
+                    </p>
+                </div>
+
+                <div id="sentence-options" class="grid grid-cols-2 gap-3 w-full max-w-md">
+                    <!-- Opciones de respuesta -->
+                </div>
+            </div>
+
+            <!-- Botón Siguiente Pregunta -->
+            <div class="mt-6 flex justify-end">
+                <button id="next-btn" onclick="nextQuestion()" class="hidden bg-emerald-500 hover:bg-emerald-600 text-white title-font font-bold px-6 py-3 rounded-2xl shadow-lg transition-all flex items-center gap-2 text-base">
+                    <span>Siguiente Palabra</span>
+                    <i class="fa-solid fa-arrow-right"></i>
+                </button>
+            </div>
+
+        </div>
+    </main>
+
+    <!-- Modal Informativo de Retroalimentación/Corrección Pedagógica -->
+    <div id="feedback-modal" class="fixed inset-0 bg-slate-900/40 backdrop-blur-sm hidden items-center justify-center p-4 z-50">
+        <div class="bg-white rounded-3xl p-6 max-w-md w-full shadow-2xl border border-slate-100 text-center transform transition-all">
+            <div id="modal-icon-container" class="w-16 h-16 rounded-full flex items-center justify-center mx-auto mb-4 text-3xl">
+                <!-- Icono JS -->
+            </div>
+            <h3 id="modal-title" class="title-font text-2xl font-bold mb-2">¡Casi lo logras!</h3>
+            <p id="modal-explanation" class="text-sm text-slate-600 mb-6 leading-relaxed">
+                Explicación detallada...
+            </p>
+            <button onclick="closeModal()" class="w-full bg-sky-600 hover:bg-sky-700 text-white font-bold py-3 rounded-xl title-font transition-all">
+                ¡Entendido, quiero probar otra vez!
+            </button>
+        </div>
+    </div>
+
+    <!-- Script Principal con Logic y Base de Datos Didáctica -->
+    <script>
+        // Banco de Datos Didáctico enfocado en Segundo Grado (Palabras Agudas y Graves, con y sin tilde)
+        const wordsDatabase = [
+            // AGUDAS CON TILDE
+            { word: "café", syllables: ["ca", "fé"], tonicIndex: 1, type: "aguda", hasTilde: true, endsIn: "vocal", hint: "Bebida caliente", icon: "☕" },
+            { word: "mamá", syllables: ["ma", "má"], tonicIndex: 1, type: "aguda", hasTilde: true, endsIn: "vocal", hint: "La persona que te cuida con amor", icon: "👩" },
+            { word: "ratón", syllables: ["ra", "tón"], tonicIndex: 1, type: "aguda", hasTilde: true, endsIn: "n", hint: "Animal pequeño al que le gusta el queso", icon: "🐭" },
+            { word: "compás", syllables: ["com", "pás"], tonicIndex: 1, type: "aguda", hasTilde: true, endsIn: "s", hint: "Herramienta para hacer círculos", icon: "📐" },
+            { word: "categoría", syllables: ["ca", "te", "go", "ría"], tonicIndex: 3, type: "aguda", hasTilde: true, endsIn: "vocal", hint: "Grupo de clasificación", icon: "🏷️" },
+
+            // AGUDAS PROSÓDICAS (SIN TILDE - Para reforzar el tono de voz sin tilde)
+            { word: "pared", syllables: ["pa", "red"], tonicIndex: 1, type: "aguda", hasTilde: false, endsIn: "d", hint: "Lo que divide las habitaciones", icon: "🧱" },
+            { word: "reloj", syllables: ["re", "loj"], tonicIndex: 1, type: "aguda", hasTilde: false, endsIn: "j", hint: "Marca la hora", icon: "⌚" },
+            { word: "tambor", syllables: ["tam", "bor"], tonicIndex: 1, type: "aguda", hasTilde: false, endsIn: "r", hint: "Instrumento musical de percusión", icon: "🥁" },
+            { word: "caracol", syllables: ["ca", "ra", "col"], tonicIndex: 2, type: "aguda", hasTilde: false, endsIn: "l", hint: "Lleva su casita en la espalda", icon: "🐌" },
+
+            // GRAVES CON TILDE
+            { word: "árbol", syllables: ["ár", "bol"], tonicIndex: 0, type: "grave", hasTilde: true, endsIn: "l", hint: "Tiene hojas y tronco de madera", icon: "🌳" },
+            { word: "lápiz", syllables: ["lá", "piz"], tonicIndex: 0, type: "grave", hasTilde: true, endsIn: "z", hint: "Sirve para escribir y dibujar", icon: "✏️" },
+            { word: "azúcar", syllables: ["a", "zú", "car"], tonicIndex: 1, type: "grave", hasTilde: true, endsIn: "r", hint: "Endulza los alimentos", icon: "🍬" },
+
+            // GRAVES PROSÓDICAS (SIN TILDE)
+            { word: "mesa", syllables: ["me", "sa"], tonicIndex: 0, type: "grave", hasTilde: false, endsIn: "vocal", hint: "Mueble para comer o estudiar", icon: "🪑" },
+            { word: "perro", syllables: ["pe", "rro"], tonicIndex: 0, type: "grave", hasTilde: false, endsIn: "vocal", hint: "El mejor amigo del hombre", icon: "🐶" },
+            { word: "camisa", syllables: ["ca", "mi", "sa"], tonicIndex: 1, type: "grave", hasTilde: false, endsIn: "vocal", hint: "Prenda de vestir para la parte superior", icon: "👕" },
+            { word: "pelota", syllables: ["pe", "lo", "ta"], tonicIndex: 1, type: "grave", hasTilde: false, endsIn: "vocal", hint: "Es redonda y sirve para jugar", icon: "⚽" }
+        ];
+
+        // Banco de Oraciones para el Módulo 3
+        const sentenceDatabase = [
+            {
+                template: "Mi _____ nos prepara un delicioso chocolate caliente.",
+                options: [
+                    { word: "mamá", correct: true, reason: "Es palabra AGUDA (énfasis al final) y termina en vocal, ¡lleva tilde!" },
+                    { word: "mama", correct: false, reason: "'Mama' sin tilde significa otra cosa. Para referirte a tu madre es una palabra aguda con tilde en la 'á'." }
+                ]
+            },
+            {
+                template: "En la clase de dibujo uso mi _____ de color azul.",
+                options: [
+                    { word: "lápiz", correct: true, reason: "Es palabra GRAVE con fuerza en 'lá' y termina en 'z' (distinto a N, S o vocal), lleva tilde." },
+                    { word: "lapiz", correct: false, reason: "¡Recuerda! 'Lápiz' es grave y termina en Z, por eso debe llevar tilde en la 'á'." }
+                ]
+            },
+            {
+                template: "El pajarito voló alto hacia la rama del _____.",
+                options: [
+                    { word: "árbol", correct: true, reason: "Excelente. Árbol es GRAVE con tono fuerte en la penúltima sílaba (ár)." },
+                    { word: "arbol", correct: false, reason: "Falta la tilde gráfica en 'ár'. Árbol es grave y termina en L." }
+                ]
+            },
+            {
+                template: "Para entrar a la casa hay que pintar la _____.",
+                options: [
+                    { word: "pared", correct: true, reason: "¡Muy bien! Pared es AGUDA (golpe de voz en 'red'). Como termina en D, no lleva tilde." },
+                    { word: "paréd", correct: false, reason: "¡Cuidado! 'Pared' es aguda pero termina en D. Las agudas solo llevan tilde si terminan en N, S o vocal." }
+                ]
+            }
+        ];
+
+        // Estado del Juego
+        let currentMode = 'detect'; // 'detect', 'accent', 'sentence'
+        let currentWordIndex = 0;
+        let currentSentenceIndex = 0;
+        let score = 0;
+        let selectedSyllableIndex = null;
+
+        // Inicialización al cargar la página
+        window.onload = function() {
+            shuffleDatabase();
+            loadCurrentQuestion();
+        };
+
+        // Mezclar las preguntas para dinamismo
+        function shuffleDatabase() {
+            wordsDatabase.sort(() => Math.random() - 0.5);
+            sentenceDatabase.sort(() => Math.random() - 0.5);
+        }
+
+        // Cambiar de Módulo de Aprendizaje
+        function switchMode(mode) {
+            currentMode = mode;
+            
+            // Actualizar interfaz de tabs
+            ['detect', 'accent', 'sentence'].forEach(m => {
+                const btn = document.getElementById(`tab-${m}`);
+                const section = document.getElementById(`mode-${m}`);
+                if(m === mode) {
+                    btn.className = "flex-1 min-w-[120px] py-3 px-4 rounded-xl font-bold title-font text-sm md:text-base transition-all bg-sky-600 text-white shadow-md";
+                    section.classList.remove('hidden');
+                } else {
+                    btn.className = "flex-1 min-w-[120px] py-3 px-4 rounded-xl font-bold title-font text-sm md:text-base transition-all text-slate-600 hover:bg-white/80";
+                    section.classList.add('hidden');
+                }
+            });
+
+            resetState();
+            loadCurrentQuestion();
+        }
+
+        // Cargar la pregunta según el modo activo
+        function loadCurrentQuestion() {
+            resetState();
+
+            if(currentMode === 'detect') {
+                const data = wordsDatabase[currentWordIndex];
+                document.getElementById('word-icon').innerText = data.icon;
+                
+                // Actualizar Tutor
+                document.getElementById('tutor-feedback').innerHTML = 
+                    `Escucha la palabra: <strong>"${data.word.toUpperCase()}"</strong>. Toca la sílaba donde la voz suena con <strong>MÁS FUERZA</strong> (Sílaba Tónica).`;
+
+                // Renderizar botones de sílabas
+                const container = document.getElementById('syllables-container');
+                container.innerHTML = '';
+
+                data.syllables.forEach((syllable, index) => {
+                    const btn = document.createElement('button');
+                    btn.onclick = () => selectSyllable(index);
+                    btn.className = `btn-syllable bg-white text-slate-800 title-font text-2xl md:text-3xl font-bold px-6 py-4 rounded-2xl border-2 border-sky-200 hover:border-sky-400 transition-all min-w-[80px]`;
+                    btn.innerText = syllable;
+                    btn.id = `syllable-btn-${index}`;
+                    container.appendChild(btn);
+                });
+
+            } else if(currentMode === 'accent') {
+                const data = wordsDatabase[currentWordIndex];
+                document.getElementById('accent-word-display').innerText = data.syllables.join(' - ').toLowerCase();
+                document.getElementById('accent-word-hint').innerText = `"${data.hint}"`;
+                
+                document.getElementById('tutor-feedback').innerHTML = 
+                    `Observa la palabra: <strong>"${data.syllables.join('-')}"</strong>. Es una palabra <strong>${data.type.toUpperCase()}</strong>. ¿Deberíamos ponerle tilde gráfica (´)?`;
+
+            } else if(currentMode === 'sentence') {
+                const data = sentenceDatabase[currentSentenceIndex];
+                document.getElementById('sentence-display').innerHTML = data.template.replace('_____', `<span class="inline-block border-b-4 border-indigo-500 text-indigo-600 px-3 py-1 font-bold">_____</span>`);
+                
+                document.getElementById('tutor-feedback').innerHTML = 
+                    `Elige la palabra que completa la oración aplicando las reglas ortográficas correctas.`;
+
+                const optionsContainer = document.getElementById('sentence-options');
+                optionsContainer.innerHTML = '';
+
+                data.options.forEach((opt, idx) => {
+                    const btn = document.createElement('button');
+                    btn.onclick = () => selectSentenceOption(opt);
+                    btn.className = `bg-white hover:bg-indigo-50 border-2 border-indigo-200 text-indigo-900 font-bold title-font text-xl py-4 px-4 rounded-2xl transition-all shadow-sm flex justify-center items-center`;
+                    btn.innerText = opt.word;
+                    optionsContainer.appendChild(btn);
+                });
+            }
+        }
+
+        // Restablecer vista de la tarjeta de juego
+        function resetState() {
+            document.getElementById('next-btn').classList.add('hidden');
+            const badge = document.getElementById('classification-badge');
+            badge.className = "mt-6 opacity-0 transition-all transform scale-95 flex items-center justify-center gap-2 px-6 py-2.5 rounded-full font-bold title-font text-lg text-white";
+            badge.innerHTML = '';
+            selectedSyllableIndex = null;
+        }
+
+        // MÓDULO 1: LÓGICA DE SELECCIÓN DE SÍLABA TÓNICA
+        function selectSyllable(index) {
+            const data = wordsDatabase[currentWordIndex];
+            const isCorrect = (index === data.tonicIndex);
+            
+            // Posición de la sílaba de derecha a izquierda
+            const totalSyllables = data.syllables.length;
+            const positionFromEnd = totalSyllables - 1 - index; // 0 = última, 1 = penúltima
+
+            if (isCorrect) {
+                // Acierto
+                score += 10;
+                updateScore();
+                
+                // Resaltar con color pedagógico (Rojo = Aguda, Azul = Grave)
+                const btn = document.getElementById(`syllable-btn-${index}`);
+                const colorClass = data.type === 'aguda' ? 'bg-aguda text-white border-red-600' : 'bg-grave text-white border-blue-600';
+                btn.className = `btn-syllable ${colorClass} title-font text-2xl md:text-3xl font-bold px-6 py-4 rounded-2xl border-4 transition-all scale-105 voice-accent`;
+
+                // Mostrar Insignia de Clasificación
+                const badge = document.getElementById('classification-badge');
+                if(data.type === 'aguda') {
+                    badge.innerHTML = `<i class="fa-solid fa-fire"></i> ¡Es una Palabra AGUDA! (Fuerza en la ÚLTIMA sílaba)`;
+                    badge.className = "mt-6 opacity-100 transform scale-100 bg-aguda text-white px-6 py-2.5 rounded-full font-bold title-font text-lg shadow-lg animate-bounce";
+                } else {
+                    badge.innerHTML = `<i class="fa-solid fa-gem"></i> ¡Es una Palabra GRAVE! (Fuerza en la PENÚLTIMA sílaba)`;
+                    badge.className = "mt-6 opacity-100 transform scale-100 bg-grave text-white px-6 py-2.5 rounded-full font-bold title-font text-lg shadow-lg animate-bounce";
+                }
+
+                document.getElementById('tutor-feedback').innerHTML = 
+                    `¡Excelente! La sílaba tónica es <strong>"${data.syllables[index].toUpperCase()}"</strong>. Como la fuerza está en la ${positionFromEnd === 0 ? 'ÚLTIMA' : 'PENÚLTIMA'} sílaba, es una palabra <strong>${data.type.toUpperCase()}</strong> (${data.type === 'aguda' ? 'ROJA' : 'AZUL'}).`;
+
+                document.getElementById('next-btn').classList.remove('hidden');
+
+            } else {
+                // ERROR: Diagnóstico y Corrección pedagógica activa
+                let explanation = "";
+                
+                if (positionFromEnd === 0) {
+                    explanation = `Elegiste la <strong>ÚLTIMA</strong> sílaba ("${data.syllables[index]}"), pero allí la voz suena más suave. Pronuncia despacio: `;
+                } else if (positionFromEnd === 1) {
+                    explanation = `Elegiste la <strong>PENÚLTIMA</strong> sílaba ("${data.syllables[index]}"), pero la mayor fuerza de voz no está ahí. Escucha bien: `;
+                } else {
+                    explanation = `Elegiste una sílaba anterior ("${data.syllables[index]}"). Recuerda que en 2° grado estamos buscando palabras <strong>AGUDAS</strong> (fuerza al final) y <strong>GRAVES</strong> (fuerza en la penúltima). `;
+                }
+
+                // Ayuda fonética
+                let phoneticGuide = data.syllables.map((s, i) => i === data.tonicIndex ? `<b><u>${s.toUpperCase()}</u></b>` : s.toLowerCase()).join('-');
+                explanation += `<br><br><span class="text-xl font-bold text-indigo-600">${phoneticGuide}</span><br><br>¡Intenta dar un aplauso fuerte justo en la sílaba destacada!`;
+
+                showModal("¡Escuchemos el tono de voz!", explanation, "error");
+            }
+        }
+
+        // MÓDULO 2: LÓGICA DE DECISIÓN DE TILDE
+        function checkAccentDecision(userSaidYes) {
+            const data = wordsDatabase[currentWordIndex];
+            const correctlyNeedsTilde = data.hasTilde;
+
+            if (userSaidYes === correctlyNeedsTilde) {
+                // Correcto
+                score += 10;
+                updateScore();
+                
+                let explanation = "";
+                if(data.type === 'aguda') {
+                    explanation = correctlyNeedsTilde 
+                        ? `¡Correcto! La palabra <strong>"${data.word}"</strong> es AGUDA y termina en <strong>'${data.endsIn.toUpperCase()}'</strong>. Por eso LLEVA tilde gráfica.` 
+                        : `¡Muy bien! <strong>"${data.word}"</strong> es AGUDA, pero como termina en <strong>'${data.endsIn.toUpperCase()}'</strong> (no es N, S o Vocal), NO lleva tilde.`;
+                } else {
+                    explanation = correctlyNeedsTilde
+                        ? `¡Excelente! <strong>"${data.word}"</strong> es GRAVE y termina en <strong>'${data.endsIn.toUpperCase()}'</strong>. Como NO termina en N, S o vocal, LLEVA tilde.`
+                        : `¡Bien hecho! <strong>"${data.word}"</strong> es GRAVE y termina en <strong>${data.endsIn}</strong>, por eso NO lleva tilde.`;
+                }
+
+                showModal("¡Regla Ortográfica Correcta!", explanation, "success");
+                document.getElementById('next-btn').classList.remove('hidden');
+
+            } else {
+                // Error en regla de tildación
+                let explanation = "";
+                if (data.type === 'aguda') {
+                    explanation = `La palabra <strong>"${data.word}"</strong> es <strong>AGUDA</strong> (su fuerza está en la última sílaba).<br><br>Regla de oro: Las palabras agudas <strong>solo llevan tilde si terminan en N, S o VOCAL</strong>. Esta palabra termina en <strong>'${data.endsIn.toUpperCase()}'</strong>.`;
+                } else {
+                    explanation = `La palabra <strong>"${data.word}"</strong> es <strong>GRAVE</strong> (su fuerza está en la penúltima sílaba).<br><br>Las palabras graves llevan tilde únicamente cuando <strong>NO terminan en N, S o Vocal</strong>.`;
+                }
+
+                showModal("¡Repasemos la Regla!", explanation, "error");
+            }
+        }
+
+        // MÓDULO 3: SELECCIÓN EN ORACIÓN
+        function selectSentenceOption(option) {
+            if(option.correct) {
+                score += 15;
+                updateScore();
+                
+                document.getElementById('sentence-display').innerHTML = 
+                    sentenceDatabase[currentSentenceIndex].template.replace('_____', `<span class="inline-block bg-emerald-100 text-emerald-700 px-3 py-1 font-bold rounded-lg">${option.word}</span>`);
+
+                showModal("¡Oración Perfecta!", option.reason, "success");
+                document.getElementById('next-btn').classList.remove('hidden');
+            } else {
+                showModal("Atención Ortográfica", option.reason, "error");
+            }
+        }
+
+        // Simulación visual y auditiva de "Palmadas" para golpear la sílaba tónica
+        function playClapSound() {
+            const data = wordsDatabase[currentWordIndex];
+            const icon = document.getElementById('clap-icon');
+            icon.classList.add('animate-clap');
+            setTimeout(() => icon.classList.remove('animate-clap'), 400);
+
+            // Resaltar temporalmente sílabas en secuencia marcando el tono
+            data.syllables.forEach((syllable, idx) => {
+                setTimeout(() => {
+                    const btn = document.getElementById(`syllable-btn-${idx}`);
+                    if(btn) {
+                        const originalClass = btn.className;
+                        btn.classList.add('bg-amber-300', 'scale-110');
+                        setTimeout(() => {
+                            btn.className = originalClass;
+                        }, 500);
+                    }
+                }, idx * 600);
+            });
+        }
+
+        // Avanzar a la siguiente pregunta
+        function nextQuestion() {
+            if(currentMode === 'sentence') {
+                currentSentenceIndex = (currentSentenceIndex + 1) % sentenceDatabase.length;
+            } else {
+                currentWordIndex = (currentWordIndex + 1) % wordsDatabase.length;
+            }
+            loadCurrentQuestion();
+        }
+
+        // Actualización de Puntuación
+        function updateScore() {
+            document.getElementById('score-display').innerText = score;
+        }
+
+        // Control del Modal Pedagogico
+        function showModal(title, message, type) {
+            const modal = document.getElementById('feedback-modal');
+            const iconContainer = document.getElementById('modal-icon-container');
+            
+            document.getElementById('modal-title').innerText = title;
+            document.getElementById('modal-explanation').innerHTML = message;
+
+            if(type === 'success') {
+                iconContainer.className = "w-16 h-16 rounded-full flex items-center justify-center mx-auto mb-4 text-3xl bg-emerald-100 text-emerald-600";
+                iconContainer.innerHTML = `<i class="fa-solid fa-circle-check"></i>`;
+            } else {
+                iconContainer.className = "w-16 h-16 rounded-full flex items-center justify-center mx-auto mb-4 text-3xl bg-amber-100 text-amber-600";
+                iconContainer.innerHTML = `<i class="fa-solid fa-lightbulb"></i>`;
+            }
+
+            modal.classList.remove('hidden');
+            modal.classList.add('flex');
+        }
+
+        function closeModal() {
+            const modal = document.getElementById('feedback-modal');
+            modal.classList.add('hidden');
+            modal.classList.remove('flex');
+        }
+    </script>
+</body>
+</html>
